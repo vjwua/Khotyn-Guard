@@ -8,18 +8,20 @@ using UnityEngine.UI;
 [RequireComponent(typeof(TextMeshPro))]
 public class CoordinateLabeler : MonoBehaviour
 {
+    [SerializeField] Color defaultColor = Color.white;
+    [SerializeField] Color exploredColor = Color.yellow;
+    [SerializeField] Color pathColor = Color.green;
+    [SerializeField] Color blockedColor = new Color(1f, 0.15f, 0.08f);
+
     TextMeshPro coordinateLabel;
     Vector2Int coordinates = new Vector2Int();
-    Waypoint waypoint;
-
-    [SerializeField] Color defaultColor = Color.white;
-    [SerializeField] Color selectedTileColor = new Color(1f, 0.15f, 0.08f);
+    GridManager gridManager;
     
     void Awake()
     {
+        gridManager = FindObjectOfType<GridManager>();
         coordinateLabel = GetComponent<TextMeshPro>();
         coordinateLabel.enabled = false;
-        waypoint = GetComponentInParent<Waypoint>();
         DisplayCoordinates();
     }
 
@@ -46,13 +48,27 @@ public class CoordinateLabeler : MonoBehaviour
 
     private void SetLabelColors()
     {
-        if (waypoint.IsPlaceable)
+        if (gridManager == null) { return; }
+        if (gridManager.GetNode(coordinates) == null) return;
+
+        Node node = gridManager.GetNode(coordinates);
+
+        if (node == null) { return; }
+        else if (!node.isWalkable)
         {
-            coordinateLabel.color = defaultColor;
+            coordinateLabel.color = blockedColor;
+        }
+        else if (node.isPath)
+        {
+            coordinateLabel.color = pathColor;
+        }
+        else if (node.isExplored)
+        {
+            coordinateLabel.color = exploredColor;
         }
         else
         {
-            coordinateLabel.color = selectedTileColor;
+            coordinateLabel.color = defaultColor;
         }
     }
 
